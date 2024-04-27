@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Dropdown</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h2>Select a Book:</h2>
+    <select id="book-dropdown">
+        <option value="">Select a book...</option>
+    </select>
+    <div id="description-box">
+        <h3>Description:</h3>
+        <p id="book-description"></p>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Ajax request to fetch books.xml
+            $.ajax({
+                type: "GET",
+                url: "books.xml",
+                dataType: "xml",
+                success: function(xml) {
+                    $(xml).find('book').each(function() {
+                        var title = $(this).find('title').text();
+                        $('#book-dropdown').append($('<option></option>').attr('value', title).text(title));
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error loading XML file:", error);
+                }
+            });
+
+            // Event handler for book selection
+            $('#book-dropdown').change(function() {
+                var selectedBook = $(this).val();
+                if (selectedBook !== "") {
+                    // Display book description
+                    $.ajax({
+                        type: "GET",
+                        url: "books.xml",
+                        dataType: "xml",
+                        success: function(xml) {
+                            $(xml).find('book').each(function() {
+                                var title = $(this).find('title').text();
+                                if (title === selectedBook) {
+                                    var author = $(this).find('author').text();
+                                    var year = $(this).find('year').text();
+                                    var description = "Author: " + author + "<br>Year: " + year;
+                                    $('#book-description').html(description);
+                                    return false; // Stop loop once found
+                                }
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error loading XML file:", error);
+                        }
+                    });
+                } else {
+                    $('#book-description').html(""); // Clear description if no book selected
+                }
+            });
+        });
+    </script>
+</body>
+</html>
